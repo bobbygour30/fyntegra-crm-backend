@@ -19,7 +19,7 @@ app.use(
   })
 );
 
-// IMPORTANT: respond to preflight immediately
+// Respond to preflight immediately
 app.options("*", cors());
 
 app.use(express.json());
@@ -29,7 +29,11 @@ app.use("/api/contacts", contactRoutes);
 app.use("/api/banks", bankRoutes);
 app.use("/api/campaigns", campaignRoutes);
 
-app.get("/", (req, res) => res.send("Fyntegra CRM Backend"));
+// Health checks
+app.get("/", (req, res) => {
+  res.send("Fyntegra CRM Backend");
+});
+
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", service: "Fyntegra CRM Backend" });
 });
