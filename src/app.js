@@ -20,6 +20,14 @@ app.use("/api/contacts", contactRoutes);
 app.use("/api/banks", bankRoutes);
 app.use("/api/campaigns", campaignRoutes);
 
+app.get("/", (req, res) => {
+  res.json({
+    status: "OK",
+    service: "Fyntegra CRM Backend",
+  });
+});
+
+
 /* ============== HEALTH CHECK =================== */
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK" });
