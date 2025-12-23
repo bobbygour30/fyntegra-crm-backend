@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 
+import { ensureDB } from "./middlewares/db.middleware.js";
+
 import authRoutes from "./routes/auth.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import bankRoutes from "./routes/bank.routes.js";
@@ -19,20 +21,16 @@ app.use(
   })
 );
 
-// Respond to preflight immediately
 app.options("*", cors());
-
 app.use(express.json());
+
+// 🔥 THIS IS THE KEY LINE
+app.use(ensureDB);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/contacts", contactRoutes);
 app.use("/api/banks", bankRoutes);
 app.use("/api/campaigns", campaignRoutes);
-
-// Health checks
-app.get("/", (req, res) => {
-  res.send("Fyntegra CRM Backend");
-});
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", service: "Fyntegra CRM Backend" });
