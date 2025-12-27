@@ -1,29 +1,34 @@
 import app from "./app.js";
 import { connectDB } from "./config/db.js";
 
-// Cache the DB connection to reuse across invocations (best practice for serverless)
-let conn;
-async function getDB() {
-  if (!conn) {
-    conn = await connectDB();  // Your connectDB should return the connection/mongoose instance
+const PORT = process.env.PORT || 5000;
+
+// Connect to DB (non-blocking for serverless, but await locally for clean startup)
+connectDB().catch(err => {
+  console.error("Failed to connect to MongoDB:", err);
+  // On local dev, exit if DB fails – easier debugging
+  if (process.env.NODE_ENV !== "production") {
+    process.exit(1);
   }
-  return conn;
+});
+
+// Detect if we're running on Vercel (serverless) or locally
+const isVercel = process.env.VERCEL || process.env.NEXT_PUBLIC_VERCEL_ENV;
+
+if (!isVercel) {
+  // Only start the traditional server locally
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  });
 }
 
-// Export a serverless handler
-export default async function handler(req, res) {
-  try {
-    await getDB();  // Ensure DB is connected (non-blocking reuse)
-    app(req, res);  // Let Express handle the request
-  } catch (error) {
-    console.error("Handler error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-}
+// Export the handler for Vercel serverless functions
+export default app;  // Vercel will call app(req, res) directly
 
-// Optional: Configure for Vercel (if you want higher timeouts/cold start improvements)
+// Optional: improve cold starts / timeouts on Vercel
 export const config = {
   api: {
-    bodyParser: false,  // If you handle large bodies manually; otherwise keep true
+    // Increase timeout if you have slow DB operations
+    maxDuration: 30,
   },
 };
